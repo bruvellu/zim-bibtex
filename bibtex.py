@@ -1,9 +1,11 @@
 # Copyleft 2023 Bruno C. Vellutini https://brunovellutini.com
 
+import logging
 
 from zim.plugins import PluginClass
 from zim.notebook import Path, NotebookExtension
 
+logger = logging.getLogger('zim.plugins.bibtex')
 
 class BibtexPlugin(PluginClass):
 
@@ -30,3 +32,5 @@ class BibTexNotebookExtension(NotebookExtension):
         self.properties = self.plugin.notebook_properties(notebook)
         self.namespace = self.properties['namespace']
         self.bibfile = self.properties['bibfile']
+        logger.debug(f'BibTeX namespace: {self.namespace}')
+        logger.debug(f'BibTeX file: {self.bibfile}')
