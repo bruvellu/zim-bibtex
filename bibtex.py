@@ -1,4 +1,8 @@
-# Copyleft 2023 Bruno C. Vellutini https://brunovellutini.com
+# Copyleft 2023 Bruno C. Vellutini <https://brunovellutini.com>
+#
+# Import BibTeX references to Zim Desktop Wiki
+#
+# This plugin converts the entries of a BibTeX file to pages in Zim. This allows one to link to these references directly from other pages.
 
 import logging
 
@@ -6,6 +10,7 @@ from zim.plugins import PluginClass
 from zim.notebook import Path, NotebookExtension
 
 logger = logging.getLogger('zim.plugins.bibtex')
+
 
 class BibtexPlugin(PluginClass):
 
@@ -15,7 +20,6 @@ class BibtexPlugin(PluginClass):
 		'author': 'Bruno C. Vellutini',
 		'help': 'Plugins:BibTeX'
 	}
-		
 
 	plugin_preferences = ()
 	
