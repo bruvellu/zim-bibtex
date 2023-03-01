@@ -9,6 +9,8 @@ import logging
 from zim.plugins import PluginClass
 from zim.notebook import Path, NotebookExtension
 
+from pybtex.database import parse_file
+
 logger = logging.getLogger('zim.plugins.bibtex')
 
 
@@ -38,3 +40,12 @@ class BibTexNotebookExtension(NotebookExtension):
 		self.bibfile = self.properties['bibfile']
 		logger.debug(f'BibTeX namespace: {self.namespace}')
 		logger.debug(f'BibTeX file: {self.bibfile}')
+
+	def load_bibfile(self, bibfile):
+		logger.debug(f'Parsing... {bibfile}')
+		self.bibdata = BibLibrary(bibfile)
+
+class BibLibrary():
+
+	def __init__(self, bibfile):
+		self.data = parse_file(bibfile)
