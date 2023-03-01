@@ -3,9 +3,18 @@
 # Import BibTeX references to Zim Desktop Wiki
 #
 # This plugin converts the entries of a BibTeX file to pages in Zim. This allows one to link to these references directly from other pages.
+#
+# TODO:
+# - Action does not work, probably need to be a PageViewExtension
+# - Show statistics for library in new window
+# - Get methods for making new pages and directories from Zim
+# - Add options to sort by alphabetical or year
+# - Save last modified date to replace updated only
+# - Delete pages that disappeared
 
 import logging
 
+from zim.actions import action
 from zim.plugins import PluginClass
 from zim.notebook import Path, NotebookExtension
 
@@ -41,11 +50,13 @@ class BibTexNotebookExtension(NotebookExtension):
 		logger.debug(f'BibTeX namespace: {self.namespace}')
 		logger.debug(f'BibTeX file: {self.bibfile}')
 
-	def load_bibfile(self, bibfile):
-		logger.debug(f'Parsing... {bibfile}')
-		self.bibdata = BibLibrary(bibfile)
+	@action(_('Update _References'), menuhints='tools') # T: Menu item
+	def load_bibfile(self):
+		logger.debug(f'Parsing... {self.bibfile}')
+		self.bibdata = BibLibrary(self.bibfile)
 
 class BibLibrary():
 
 	def __init__(self, bibfile):
 		self.data = parse_file(bibfile)
+
