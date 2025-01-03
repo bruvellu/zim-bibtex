@@ -47,6 +47,16 @@ class BibtexPlugin(PluginClass):
         ("bibfile", "file", _("Path to file"), ""),  # T: preference option
     )
 
+    @classmethod
+    def check_dependencies(klass):
+        try:
+            import bibtexparser
+            has_bib = True
+        except:
+            has_bib = False
+
+        return has_bib, [("BibtexParser", has_bib, True)]
+
 
 # class BibTexNotebookExtension(NotebookExtension):
 
