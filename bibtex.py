@@ -51,11 +51,11 @@ class BibtexPlugin(PluginClass):
     def check_dependencies(klass):
         try:
             import bibtexparser
-            has_bib = True
+            has_bibv1 = bibtexparser.__version__.startswith('1')
         except:
-            has_bib = False
+            has_bibv1 = False
 
-        return has_bib, [("BibtexParser", has_bib, True)]
+        return has_bibv1, [("python3-bibtexparser v1", has_bibv1, True)]
 
 
 # class BibTexNotebookExtension(NotebookExtension):
