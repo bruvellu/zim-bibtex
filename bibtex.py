@@ -17,6 +17,7 @@ import logging
 from zim.actions import action
 from zim.plugins import PluginClass
 from zim.notebook import Path, NotebookExtension
+from zim.gui.pageview import PageViewExtension
 
 from pybtex.database import parse_file
 
@@ -27,7 +28,7 @@ class BibtexPlugin(PluginClass):
 
 	plugin_info = {
 		'name': _('BibTeX'), # T: plugin name
-		'description': _('Import BibTeX references to Zim.'), # T: plugin description
+		'description': _('Import references from a BibTeX file as pages in Zim.'), # T: plugin description
 		'author': 'Bruno C. Vellutini',
 		'help': 'Plugins:BibTeX'
 	}
@@ -40,20 +41,28 @@ class BibtexPlugin(PluginClass):
 	)
 
 
-class BibTexNotebookExtension(NotebookExtension):
+# class BibTexNotebookExtension(NotebookExtension):
 
-	def __init__(self, plugin, notebook):
-		NotebookExtension.__init__(self, plugin, notebook)
-		self.properties = self.plugin.notebook_properties(notebook)
+    # def __init__(self, plugin, notebook):
+        # NotebookExtension.__init__(self, plugin, notebook)
+        # self.properties = self.plugin.notebook_properties(notebook)
+
+
+class BibTexPageViewExtension(PageViewExtension):
+
+	def __init__(self, plugin, pageview):
+		PageViewExtension.__init__(self, plugin, pageview)
+		self.properties = self.plugin.notebook_properties(self.pageview.notebook)
 		self.namespace = self.properties['namespace']
 		self.bibfile = self.properties['bibfile']
 		logger.debug(f'BibTeX namespace: {self.namespace}')
 		logger.debug(f'BibTeX file: {self.bibfile}')
 
-	@action(_('Update _References'), menuhints='tools') # T: Menu item
+	@action(_('Import _BibTeX'), menuhints='tools') # T: Menu item
 	def load_bibfile(self):
 		logger.debug(f'Parsing... {self.bibfile}')
 		self.bibdata = BibLibrary(self.bibfile)
+
 
 class BibLibrary():
 
