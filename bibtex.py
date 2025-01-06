@@ -12,11 +12,13 @@
 # - Save last modified date to replace updated only
 # - Delete pages that disappeared
 
+import bibtexparser
 import logging
+import os
 
 from zim.actions import action
 from zim.plugins import PluginClass
-from zim.notebook import Path, NotebookExtension
+from zim.notebook import Path
 from zim.gui.pageview import PageViewExtension
 
 logger = logging.getLogger("zim.plugins.bibtex")
@@ -57,7 +59,7 @@ class BibTeXPlugin(PluginClass):
                     f"You have v{bibtexparser.__version__} installed, but only v1 is supported"
                 )
         except:
-            logger.debug(f"bibtexparser is not installed")
+            logger.debug("bibtexparser is not installed")
             has_bibv1 = False
 
         return has_bibv1, [("python3-bibtexparser (v1)", has_bibv1, True)]
@@ -90,4 +92,11 @@ class BibTeXPageViewExtension(PageViewExtension):
 
 class BibTeXLibrary:
     def __init__(self, bibfile):
-        self.data = parse_file(bibfile)
+        self.bibtex = os.path.expanduser(bibfile)
+        self.library = ""
+
+        with open(self.bibtex) as file:
+            logger.debug(f"Importing {file.name}... (this might take a while)")
+            self.library = bibtexparser.load(file)
+            n = len(self.library.entries)
+            logger.debug(f"Loaded {n} entries from {os.path.basename(file.name)}")
