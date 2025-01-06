@@ -49,8 +49,15 @@ class BibTeXPlugin(PluginClass):
         try:
             import bibtexparser
 
+            logger.debug(f"Loaded bibtexparser v{bibtexparser.__version__}")
+
             has_bibv1 = bibtexparser.__version__.startswith("1")
+            if not has_bibv1:
+                logger.debug(
+                    f"You have v{bibtexparser.__version__} installed, but only v1 is supported"
+                )
         except:
+            logger.debug(f"bibtexparser is not installed")
             has_bibv1 = False
 
         return has_bibv1, [("python3-bibtexparser (v1)", has_bibv1, True)]
@@ -59,6 +66,13 @@ class BibTeXPlugin(PluginClass):
 class BibTeXPageViewExtension(PageViewExtension):
     def __init__(self, plugin, pageview):
         PageViewExtension.__init__(self, plugin, pageview)
+
+        # Define class variables
+        self.namespace = ""
+        self.bibfile = ""
+        self.library = ""
+
+        # Fill variables
         self.get_notebook_properties()
 
     def get_notebook_properties(self):
