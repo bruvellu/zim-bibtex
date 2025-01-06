@@ -21,6 +21,7 @@ from zim.actions import action
 from zim.plugins import PluginClass
 from zim.notebook import Path
 from zim.gui.pageview import PageViewExtension
+from zim.formats import get_format
 
 logger = logging.getLogger("zim.plugins.bibtex")
 
@@ -73,7 +74,7 @@ class BibTeXPageViewExtension(PageViewExtension):
         # Define class variables
         self.namespace = ""
         self.bibfile = ""
-        self.library = ""
+        self.bibdata = ""
 
         # Fill variables
         self.get_notebook_properties()
@@ -88,7 +89,37 @@ class BibTeXPageViewExtension(PageViewExtension):
     @action(_("Import _BibTeX"), menuhints="tools")  # T: Menu item
     def load_bibfile(self):
         self.get_notebook_properties()
-        self.library = BibTeXLibrary(self.bibfile)
+        self.navigation.open_page(self.namespace)
+        self.bibdata = BibTeXLibrary(self.bibfile)
+        self.update_stats()
+
+    def update_stats(self):
+        """Update statistics about the BibTeX library."""
+        # Get page
+        page = self.pageview.notebook.get_page(self.namespace)
+
+        # Generate statistics
+        total = len(self.bibdata.library.entries)
+        stats_content = ["\n", f"**File:** {self.bibfile}\n", f"**Entries:** {total}\n"]
+
+        # Append statistics to existing content
+        if page.hascontent:
+            page_format = get_format("wiki")
+            page_content = page_format.Dumper().dump(page.get_parsetree())
+            page_content.extend(stats_content)
+        else:
+            page_content = stats_content
+
+        print(page_content)
+
+        # Parse format and get content tree
+        tree = page_format.Parser().parse("".join(page_content))
+
+        # Save updated library page
+        page.set_parsetree(tree)
+        self.pageview.notebook.store_page(page)
+
+        logger.debug(f"BibTeX: Updated statistics of {self.namespace}")
 
 
 class BibTeXLibrary:
@@ -99,7 +130,9 @@ class BibTeXLibrary:
         self.parser = BibTexParser(ignore_nonstandard_types=False)
 
         with open(self.bibtex) as file:
-            logger.debug(f"Importing {file.name}... (this might take a while)")
+            logger.debug(f"BibTeX: Importing {file.name}... (this might take a while)")
             self.library = bibtexparser.load(file, self.parser)
             n = len(self.library.entries)
-            logger.debug(f"Loaded {n} entries from {os.path.basename(file.name)}")
+            logger.debug(
+                f"BibTeX: Loaded {n} entries from {os.path.basename(file.name)}"
+            )
