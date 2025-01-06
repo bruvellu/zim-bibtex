@@ -16,6 +16,7 @@ import bibtexparser
 import logging
 import os
 
+from bibtexparser.bparser import BibTexParser
 from zim.actions import action
 from zim.plugins import PluginClass
 from zim.notebook import Path
@@ -94,9 +95,11 @@ class BibTeXLibrary:
     def __init__(self, bibfile):
         self.bibtex = os.path.expanduser(bibfile)
         self.library = ""
+        # Don't ignore non-standard BibTeX entry types
+        self.parser = BibTexParser(ignore_nonstandard_types=False)
 
         with open(self.bibtex) as file:
             logger.debug(f"Importing {file.name}... (this might take a while)")
-            self.library = bibtexparser.load(file)
+            self.library = bibtexparser.load(file, self.parser)
             n = len(self.library.entries)
             logger.debug(f"Loaded {n} entries from {os.path.basename(file.name)}")
