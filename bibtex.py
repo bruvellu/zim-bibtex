@@ -6,7 +6,6 @@
 # allows one to link to these references directly from other pages.
 
 # TODO:
-# - Show statistics for library in new window
 # - Get methods for making new pages and directories from Zim
 # - Add options to sort by alphabetical or year
 # - Save last modified date to replace updated only
@@ -14,6 +13,7 @@
 
 import logging
 import os
+from datetime import datetime
 
 import bibtexparser
 from bibtexparser.bparser import BibTexParser
@@ -83,8 +83,8 @@ class BibTeXPageViewExtension(PageViewExtension):
         self.properties = self.plugin.notebook_properties(self.pageview.notebook)
         self.namespace = self.properties["namespace"]
         self.bibfile = self.properties["bibfile"]
-        logger.debug(f'BibTeX: Namespace is "{self.namespace}"')
-        logger.debug(f'BibTeX: Filename is "{self.bibfile}"')
+        logger.debug(f"BibTeX: Namespace is '{self.namespace}'")
+        logger.debug(f"BibTeX: Filename is '{self.bibfile}'")
 
     @action(_("Import _BibTeX"), menuhints="tools")  # T: Menu item
     def load_bibfile(self):
@@ -98,22 +98,37 @@ class BibTeXPageViewExtension(PageViewExtension):
         # Get page
         page = self.pageview.notebook.get_page(self.namespace)
 
-        # Generate statistics
-        total = len(self.bibdata.library.entries)
+        # Generate dictionary statistics
+        stats_dict = {
+            "Filename": f"[[{self.bibfile}|{os.path.basename(self.bibfile)}]]",
+            "References": f"{len(self.bibdata.library.entries)} entries",
+            "Updated": f"{self.bibdata.updated}",
+        }
 
         # Save values as list items
-        stats_content = ["\n", f"**File:** {self.bibfile}\n", f"**Entries:** {total}\n"]
+        stats_content = []
+        for k, v in stats_dict.items():
+            stats_content.append(f"**{k}:** {v}\n")
 
         # Define page format
         page_format = get_format("wiki")
 
         # Append statistics to existing content list
         if page.hascontent:
+            # Get page contents as a list
             page_tree = page.get_parsetree()
             page_content = page_format.Dumper().dump(page_tree)
+            # Keep only title and creation
+            page_content = page_content[:2]
+            page_content.append("\n")
             page_content.extend(stats_content)
         else:
-            page_content = stats_content
+            page_content = [
+                "====== References ======\n",
+                f"Created {datetime.now().strftime('%A %d %B %Y')}",
+                "\n",
+            ]
+            page_content.extend(stats_content)
 
         # Convert content list to plain text
         page_text = "".join(page_content)
@@ -125,18 +140,23 @@ class BibTeXPageViewExtension(PageViewExtension):
         page.set_parsetree(tree)
         self.pageview.notebook.store_page(page)
 
-        logger.debug(f"BibTeX: Generated statistics for {self.bibfile} on {self.namespace}")
+        logger.debug(
+            f"BibTeX: Generated statistics for {self.bibfile} on {self.namespace}"
+        )
 
 
 class BibTeXLibrary:
     def __init__(self, bibfile):
         self.bibtex = os.path.expanduser(bibfile)
         self.library = ""
-        # Don't ignore non-standard BibTeX entry types
+        self.updated = ""
         self.parser = BibTexParser(ignore_nonstandard_types=False)
 
         with open(self.bibtex) as file:
             logger.debug(f"BibTeX: Importing {file.name}... (this might take a while)")
+            self.updated = (
+                datetime.now().astimezone().replace(microsecond=0).isoformat()
+            )
             self.library = bibtexparser.load(file, self.parser)
             n = len(self.library.entries)
             logger.debug(
