@@ -12,16 +12,16 @@
 # - Save last modified date to replace updated only
 # - Delete pages that disappeared
 
-import bibtexparser
 import logging
 import os
 
+import bibtexparser
 from bibtexparser.bparser import BibTexParser
 from zim.actions import action
-from zim.plugins import PluginClass
-from zim.notebook import Path
-from zim.gui.pageview import PageViewExtension
 from zim.formats import get_format
+from zim.gui.pageview import PageViewExtension
+from zim.notebook import Path
+from zim.plugins import PluginClass
 
 logger = logging.getLogger("zim.plugins.bibtex")
 
@@ -100,26 +100,32 @@ class BibTeXPageViewExtension(PageViewExtension):
 
         # Generate statistics
         total = len(self.bibdata.library.entries)
+
+        # Save values as list items
         stats_content = ["\n", f"**File:** {self.bibfile}\n", f"**Entries:** {total}\n"]
 
-        # Append statistics to existing content
+        # Define page format
+        page_format = get_format("wiki")
+
+        # Append statistics to existing content list
         if page.hascontent:
-            page_format = get_format("wiki")
-            page_content = page_format.Dumper().dump(page.get_parsetree())
+            page_tree = page.get_parsetree()
+            page_content = page_format.Dumper().dump(page_tree)
             page_content.extend(stats_content)
         else:
             page_content = stats_content
 
-        print(page_content)
+        # Convert content list to plain text
+        page_text = "".join(page_content)
 
-        # Parse format and get content tree
-        tree = page_format.Parser().parse("".join(page_content))
+        # Parse text to regenerate content tree
+        tree = page_format.Parser().parse(page_text)
 
         # Save updated library page
         page.set_parsetree(tree)
         self.pageview.notebook.store_page(page)
 
-        logger.debug(f"BibTeX: Updated statistics of {self.namespace}")
+        logger.debug(f"BibTeX: Generated statistics for {self.bibfile} on {self.namespace}")
 
 
 class BibTeXLibrary:
