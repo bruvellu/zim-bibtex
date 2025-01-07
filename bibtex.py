@@ -133,12 +133,14 @@ class BibTeXLibrary:
     # TODO: Generate alphabetical directory structure
 
     def __init__(self, bibfile):
+        self.bibfile = bibfile
         self.bibpath = os.path.expanduser(bibfile)
         self.bibname = os.path.basename(self.bibpath)
         self.parser = BibTexParser(ignore_nonstandard_types=False)
         self.library = None
         self.num_entries = 0
         self.stats = ""
+        self.folders = []
         self.updated = datetime.now().astimezone().replace(microsecond=0).isoformat()
 
         # Load entries from BibTeX file
@@ -148,16 +150,26 @@ class BibTeXLibrary:
             )
             self.library = bibtexparser.load(file, self.parser)
 
-        # Calculate number of entries and statistics
+        # Generate library statistics
         self.num_entries = len(self.library.entries)
-        self.stats = (
+        self.stats = self.generate_stats()
+        self.folders = self.generate_folders()
+
+        logger.debug(f"BibTeX: Loaded {self.num_entries} entries from {self.bibname}")
+
+    def generate_stats(self):
+        stats = (
             f"**Library** | "
-            f"[[{bibfile}|{self.bibname}]] | "
+            f"[[{self.bibfile}|{self.bibname}]] | "
             f"{self.num_entries} entries | "
             f"{self.updated}"
         )
+        return stats
 
-        logger.debug(f"BibTeX: Loaded {self.num_entries} entries from {self.bibname}")
+    def generate_folders(self):
+        folders = {key[0].upper() for key in self.library.entries_dict.keys()}
+        sorted_folders = sorted(folders)
+        return sorted_folders
 
 
 # TODO: Make class to keep track of file timestamp and other variables
