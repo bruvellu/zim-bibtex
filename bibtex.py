@@ -102,16 +102,20 @@ class BibTeXPageViewExtension(PageViewExtension):
             page_content = page_format.Dumper().dump(page_tree)
             # Only keep the title and creation date
             page_content = page_content[:2]
-            page_content.append("\n")
         else:
             page_content = [
                 "====== References ======\n",
-                f"Created {datetime.now().strftime('%A %d %B %Y')}",
-                "\n",
+                f"Created {datetime.now().strftime('%A %d %B %Y')}\n",
             ]
 
-        # Import library statistics as a contents list
-        page_content.extend([self.bibdata.stats])
+        # Add library statistics as content list
+        page_content.extend(self.get_stats_list())
+
+        # Add newline spacer
+        page_content.append("\n")
+
+        # Add folders as content list
+        page_content.extend(self.get_folder_list())
 
         # Convert content list to plain text
         page_text = "".join(page_content)
@@ -127,6 +131,23 @@ class BibTeXPageViewExtension(PageViewExtension):
             f"BibTeX: Generated statistics for {self.bibfile} on {self.rootpage}"
         )
 
+    def get_stats_list(self):
+        stats_list = [
+            "\n===== Library ======\n",
+            f"* [[{self.bibdata.bibfile}|{self.bibdata.bibname}]] | "
+            f"{self.bibdata.num_entries} entries | "
+            f"{self.bibdata.updated}",
+        ]
+        return stats_list
+
+    def get_folder_list(self):
+        folder_list = [
+            "\n===== Folders =====\n",
+        ]
+        for folder in self.bibdata.folders:
+            folder_list.append(f"* [[+{folder}|{folder}]]\n")
+        return folder_list
+
 
 class BibTeXLibrary:
     # TODO: Make template for individual entries
@@ -139,7 +160,6 @@ class BibTeXLibrary:
         self.parser = BibTexParser(ignore_nonstandard_types=False)
         self.library = None
         self.num_entries = 0
-        self.stats = ""
         self.folders = []
         self.updated = datetime.now().astimezone().replace(microsecond=0).isoformat()
 
@@ -152,19 +172,9 @@ class BibTeXLibrary:
 
         # Generate library statistics
         self.num_entries = len(self.library.entries)
-        self.stats = self.generate_stats()
         self.folders = self.generate_folders()
 
         logger.debug(f"BibTeX: Loaded {self.num_entries} entries from {self.bibname}")
-
-    def generate_stats(self):
-        stats = (
-            f"**Library** | "
-            f"[[{self.bibfile}|{self.bibname}]] | "
-            f"{self.num_entries} entries | "
-            f"{self.updated}"
-        )
-        return stats
 
     def generate_folders(self):
         folders = {key[0].upper() for key in self.library.entries_dict.keys()}
