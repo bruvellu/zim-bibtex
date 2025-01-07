@@ -99,17 +99,13 @@ class BibTeXPageViewExtension(PageViewExtension):
         # Get page
         page = self.pageview.notebook.get_page(self.namespace)
 
-        # Generate dictionary statistics
-        stats_dict = {
-            "Filename": f"[[{self.bibfile}|{os.path.basename(self.bibfile)}]]",
-            "References": f"{len(self.bibdata.library.entries)} entries",
-            "Updated": f"{self.bibdata.updated}",
-        }
-
-        # Save values as list items
-        stats_content = []
-        for k, v in stats_dict.items():
-            stats_content.append(f"**{k}:** {v}\n")
+        # Generate dictionary statistics as a list
+        stats_content = [
+            f"**Library** | "
+            f"[[{self.bibfile}|{os.path.basename(self.bibfile)}]] | "
+            f"{self.bibdata.num_entries} entries | "
+            f"{self.bibdata.updated}",
+        ]
 
         # Define page format
         page_format = get_format("wiki")
@@ -149,17 +145,15 @@ class BibTeXPageViewExtension(PageViewExtension):
 class BibTeXLibrary:
     def __init__(self, bibfile):
         self.bibtex = os.path.expanduser(bibfile)
-        self.library = ""
-        self.updated = ""
         self.parser = BibTexParser(ignore_nonstandard_types=False)
+        self.library = None
+        self.num_entries = 0
+        self.updated = datetime.now().astimezone().replace(microsecond=0).isoformat()
 
         with open(self.bibtex) as file:
             logger.debug(f"BibTeX: Importing {file.name}... (this might take a while)")
-            self.updated = (
-                datetime.now().astimezone().replace(microsecond=0).isoformat()
-            )
             self.library = bibtexparser.load(file, self.parser)
-            n = len(self.library.entries)
+            self.num_entries = len(self.library.entries)
             logger.debug(
-                f"BibTeX: Loaded {n} entries from {os.path.basename(file.name)}"
+                f"BibTeX: Loaded {self.num_entries} entries from {os.path.basename(file.name)}"
             )
