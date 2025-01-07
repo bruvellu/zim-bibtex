@@ -60,7 +60,7 @@ class BibTeXPlugin(PluginClass):
                 logger.debug(
                     f"You have v{bibtexparser.__version__} installed, but only v1 is supported"
                 )
-        except:
+        except ImportError:
             logger.debug("bibtexparser is not installed")
             has_bibv1 = False
 
@@ -72,9 +72,10 @@ class BibTeXPageViewExtension(PageViewExtension):
         PageViewExtension.__init__(self, plugin, pageview)
 
         # Define class variables
+        self.properties = None
         self.namespace = ""
         self.bibfile = ""
-        self.bibdata = ""
+        self.bibdata = None
 
         # Fill variables
         self.get_notebook_properties()
