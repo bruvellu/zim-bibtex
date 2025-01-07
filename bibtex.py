@@ -5,11 +5,6 @@
 # This plugin converts the entries in a BibTeX file to pages in Zim. This
 # allows one to link to these references directly from other pages.
 
-# TODO:
-# - Get methods for making new pages and directories from Zim
-# - Add options to sort by alphabetical or year
-# - Save last modified date to replace updated only
-# - Delete pages that disappeared
 
 import logging
 import os
@@ -36,16 +31,19 @@ class BibTeXPlugin(PluginClass):
         "help": "Plugins:BibTeX",
     }
 
+    # TODO: Add option to remove pages that disappeared from bibfile
+    # TODO: Add option for alphabetical or year sorting?
+
     plugin_preferences = ()
 
     plugin_notebook_properties = (
         (
+            "rootpage",
             "namespace",
-            "namespace",
-            _("Namespace"),
+            _("Library root page"),
             Path(":References"),
         ),  # T: preference option
-        ("bibfile", "file", _("Path to file"), ""),  # T: preference option
+        ("bibfile", "file", _("Path to .bib file"), ""),  # T: preference option
     )
 
     @classmethod
@@ -73,7 +71,7 @@ class BibTeXPageViewExtension(PageViewExtension):
 
         # Define class variables
         self.properties = None
-        self.namespace = ""
+        self.rootpage = ""
         self.bibfile = ""
         self.bibdata = None
 
@@ -82,22 +80,23 @@ class BibTeXPageViewExtension(PageViewExtension):
 
     def get_notebook_properties(self):
         self.properties = self.plugin.notebook_properties(self.pageview.notebook)
-        self.namespace = self.properties["namespace"]
+        self.rootpage = self.properties["rootpage"]
         self.bibfile = self.properties["bibfile"]
-        logger.debug(f"BibTeX: Namespace is '{self.namespace}'")
+        logger.debug(f"BibTeX: Namespace is '{self.rootpage}'")
         logger.debug(f"BibTeX: Filename is '{self.bibfile}'")
 
     @action(_("Import _BibTeX"), menuhints="tools")  # T: Menu item
     def load_bibfile(self):
         self.get_notebook_properties()
-        self.navigation.open_page(self.namespace)
+        self.navigation.open_page(self.rootpage)
         self.bibdata = BibTeXLibrary(self.bibfile)
         self.update_stats()
 
+    # TODO: Split into update_root and update_stats
     def update_stats(self):
         """Update statistics about the BibTeX library."""
         # Get page
-        page = self.pageview.notebook.get_page(self.namespace)
+        page = self.pageview.notebook.get_page(self.rootpage)
 
         # Generate dictionary statistics as a list
         stats_content = [
@@ -138,11 +137,15 @@ class BibTeXPageViewExtension(PageViewExtension):
         self.pageview.notebook.store_page(page)
 
         logger.debug(
-            f"BibTeX: Generated statistics for {self.bibfile} on {self.namespace}"
+            f"BibTeX: Generated statistics for {self.bibfile} on {self.rootpage}"
         )
 
 
 class BibTeXLibrary:
+
+    # TODO: Make template for individual entries
+    # TODO: Generate alphabetical directory structure
+
     def __init__(self, bibfile):
         self.bibtex = os.path.expanduser(bibfile)
         self.parser = BibTexParser(ignore_nonstandard_types=False)
@@ -157,3 +160,5 @@ class BibTeXLibrary:
             logger.debug(
                 f"BibTeX: Loaded {self.num_entries} entries from {os.path.basename(file.name)}"
             )
+
+# TODO: Make class to keep track of file timestamp and other variables
