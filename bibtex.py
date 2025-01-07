@@ -90,50 +90,37 @@ class BibTeXPageViewExtension(PageViewExtension):
         self.get_notebook_properties()
         self.navigation.open_page(self.rootpage)
         self.bibdata = BibTeXLibrary(self.bibfile)
-        self.update_stats()
+        self.update_root()
 
-    # TODO: Split into update_root and update_stats
-    def update_stats(self):
-        """Update statistics about the BibTeX library."""
-        # Get page
+    def update_root(self):
+        """Update root page with library information."""
         page = self.pageview.notebook.get_page(self.rootpage)
-
-        # Generate dictionary statistics as a list
-        stats_content = [
-            f"**Library** | "
-            f"[[{self.bibfile}|{os.path.basename(self.bibfile)}]] | "
-            f"{self.bibdata.num_entries} entries | "
-            f"{self.bibdata.updated}",
-        ]
-
-        # Define page format
         page_format = get_format("wiki")
-
-        # Append statistics to existing content list
         if page.hascontent:
             # Get page contents as a list
             page_tree = page.get_parsetree()
             page_content = page_format.Dumper().dump(page_tree)
-            # Keep only title and creation
+            # Only keep the title and creation date
             page_content = page_content[:2]
             page_content.append("\n")
-            page_content.extend(stats_content)
         else:
             page_content = [
                 "====== References ======\n",
                 f"Created {datetime.now().strftime('%A %d %B %Y')}",
                 "\n",
             ]
-            page_content.extend(stats_content)
+
+        # Import library statistics as a contents list
+        page_content.extend([self.bibdata.stats])
 
         # Convert content list to plain text
         page_text = "".join(page_content)
 
         # Parse text to regenerate content tree
-        tree = page_format.Parser().parse(page_text)
+        new_tree = page_format.Parser().parse(page_text)
 
         # Save updated library page
-        page.set_parsetree(tree)
+        page.set_parsetree(new_tree)
         self.pageview.notebook.store_page(page)
 
         logger.debug(
@@ -142,23 +129,35 @@ class BibTeXPageViewExtension(PageViewExtension):
 
 
 class BibTeXLibrary:
-
     # TODO: Make template for individual entries
     # TODO: Generate alphabetical directory structure
 
     def __init__(self, bibfile):
-        self.bibtex = os.path.expanduser(bibfile)
+        self.bibpath = os.path.expanduser(bibfile)
+        self.bibname = os.path.basename(self.bibpath)
         self.parser = BibTexParser(ignore_nonstandard_types=False)
         self.library = None
         self.num_entries = 0
+        self.stats = ""
         self.updated = datetime.now().astimezone().replace(microsecond=0).isoformat()
 
-        with open(self.bibtex) as file:
-            logger.debug(f"BibTeX: Importing {file.name}... (this might take a while)")
-            self.library = bibtexparser.load(file, self.parser)
-            self.num_entries = len(self.library.entries)
+        # Load entries from BibTeX file
+        with open(self.bibpath) as file:
             logger.debug(
-                f"BibTeX: Loaded {self.num_entries} entries from {os.path.basename(file.name)}"
+                f"BibTeX: Importing {self.bibpath}... (this might take a while)"
             )
+            self.library = bibtexparser.load(file, self.parser)
+
+        # Calculate number of entries and statistics
+        self.num_entries = len(self.library.entries)
+        self.stats = (
+            f"**Library** | "
+            f"[[{bibfile}|{self.bibname}]] | "
+            f"{self.num_entries} entries | "
+            f"{self.updated}"
+        )
+
+        logger.debug(f"BibTeX: Loaded {self.num_entries} entries from {self.bibname}")
+
 
 # TODO: Make class to keep track of file timestamp and other variables
