@@ -10,8 +10,6 @@ import logging
 import os
 from datetime import datetime
 
-import bibtexparser
-from bibtexparser.bparser import BibTexParser
 from zim.actions import action
 from zim.formats import get_format
 from zim.gui.pageview import PageViewExtension
@@ -50,6 +48,7 @@ class BibTeXPlugin(PluginClass):
     def check_dependencies(klass):
         try:
             import bibtexparser
+            from bibtexparser.bparser import BibTexParser
 
             logger.debug(f"Loaded bibtexparser v{bibtexparser.__version__}")
 
