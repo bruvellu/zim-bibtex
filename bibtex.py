@@ -19,6 +19,22 @@ from zim.plugins import PluginClass
 logger = logging.getLogger("zim.plugins.bibtex")
 
 
+# Try importing bibtexparser dependency
+try:
+    import bibtexparser
+
+    logger.debug(f"Loaded bibtexparser v{bibtexparser.__version__}")
+
+    has_bibv1 = bibtexparser.__version__.startswith("1")
+    if not has_bibv1:
+        logger.debug(
+            f"You have v{bibtexparser.__version__} installed, but only v1 is supported"
+        )
+except ImportError:
+    logger.debug("bibtexparser is not installed")
+    has_bibv1 = False
+
+
 class BibTeXPlugin(PluginClass):
     plugin_info = {
         "name": _("BibTeX"),  # T: plugin name
@@ -46,21 +62,6 @@ class BibTeXPlugin(PluginClass):
 
     @classmethod
     def check_dependencies(klass):
-        try:
-            import bibtexparser
-            from bibtexparser.bparser import BibTexParser
-
-            logger.debug(f"Loaded bibtexparser v{bibtexparser.__version__}")
-
-            has_bibv1 = bibtexparser.__version__.startswith("1")
-            if not has_bibv1:
-                logger.debug(
-                    f"You have v{bibtexparser.__version__} installed, but only v1 is supported"
-                )
-        except ImportError:
-            logger.debug("bibtexparser is not installed")
-            has_bibv1 = False
-
         return has_bibv1, [("python3-bibtexparser (v1)", has_bibv1, True)]
 
 
@@ -156,7 +157,7 @@ class BibTeXLibrary:
         self.bibfile = bibfile
         self.bibpath = os.path.expanduser(bibfile)
         self.bibname = os.path.basename(self.bibpath)
-        self.parser = BibTexParser(ignore_nonstandard_types=False)
+        self.parser = bibtexparser.bparser.BibTexParser(ignore_nonstandard_types=False)
         self.library = None
         self.num_entries = 0
         self.folders = []
