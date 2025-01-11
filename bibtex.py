@@ -78,19 +78,19 @@ class BibTeXPageViewExtension(PageViewExtension):
         # Fill variables
         self.get_notebook_properties()
 
-    def get_notebook_properties(self):
-        self.properties = self.plugin.notebook_properties(self.pageview.notebook)
-        self.rootpage = self.properties["rootpage"]
-        self.bibfile = self.properties["bibfile"]
-        logger.debug(f"BibTeX: Namespace is '{self.rootpage}'")
-        logger.debug(f"BibTeX: Filename is '{self.bibfile}'")
-
     @action(_("Import _BibTeX"), menuhints="tools")  # T: Menu item
     def load_bibfile(self):
         self.get_notebook_properties()
         self.navigation.open_page(self.rootpage)
         self.bibdata = BibTeXLibrary(self.bibfile)
         self.update_root()
+
+    def get_notebook_properties(self):
+        self.properties = self.plugin.notebook_properties(self.pageview.notebook)
+        self.rootpage = self.properties["rootpage"]
+        self.bibfile = self.properties["bibfile"]
+        logger.debug(f"BibTeX: Namespace is '{self.rootpage}'")
+        logger.debug(f"BibTeX: Filename is '{self.bibfile}'")
 
     def update_root(self):
         """Update root page with library information."""
@@ -150,9 +150,6 @@ class BibTeXPageViewExtension(PageViewExtension):
 
 
 class BibTeXLibrary:
-    # TODO: Make template for individual entries
-    # TODO: Generate alphabetical directory structure
-
     def __init__(self, bibfile):
         self.bibfile = bibfile
         self.bibpath = os.path.expanduser(bibfile)
@@ -161,6 +158,7 @@ class BibTeXLibrary:
         self.library = None
         self.num_entries = 0
         self.folders = []
+        # TODO: Replace by file timestamp?
         self.updated = datetime.now().astimezone().replace(microsecond=0).isoformat()
 
         # Load entries from BibTeX file
@@ -180,6 +178,3 @@ class BibTeXLibrary:
         folders = {key[0].upper() for key in self.library.entries_dict.keys()}
         sorted_folders = sorted(folders)
         return sorted_folders
-
-
-# TODO: Make class to keep track of file timestamp and other variables
