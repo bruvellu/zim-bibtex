@@ -8,6 +8,7 @@
 
 import logging
 import os
+from collections import OrderedDict
 from datetime import datetime
 
 from zim.actions import action
@@ -155,15 +156,29 @@ class BibTeXPageViewExtension(PageViewExtension):
 
     def import_entries(self):
         for entry in self.bibdata.library.entries:
-            bibkey = entry["ID"]
-            name = f"{self.rootpage}:{bibkey[0]}:{bibkey}"
+            # Convert to ordered dictionary
+            ordbib = OrderedDict(entry)
+            bibkey = ordbib.pop("ID")
+            bibtype = ordbib.pop("ENTRYTYPE")
+            folder = bibkey[0]
+
+            # bibkey = entry["ID"]
+            name = f"{self.rootpage}:{folder}:{bibkey}"
             path = Path(Path.makeValidPageName(name))
-            logger.debug(
-                f"BibTeX: Importing @{entry['ENTRYTYPE']} @{entry['ID']} to {path.name}"
-            )
+            logger.debug(f"BibTeX: Importing @{bibtype} @{bibkey} to {path.name}")
             page = self.pageview.notebook.get_page(path)
             content = self.get_page_title(page, bibkey)
-            print(content)
+
+            # Add bibkey
+            content.extend([f"\n@{entry['ENTRYTYPE']}\n"])
+            content.append("\n")
+
+            for k, v in reversed(ordbib.items()):
+                content.append(f"**{k}:** {v.replace('\n', ' ')}\n")
+
+            # Update content tree and save page
+            page.set_parsetree(self.get_content_tree(content))
+            self.pageview.notebook.store_page(page)
 
 
 class BibTeXLibrary:
