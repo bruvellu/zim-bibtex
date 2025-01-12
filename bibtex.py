@@ -74,6 +74,7 @@ class BibTeXPageViewExtension(PageViewExtension):
         self.rootpage = ""
         self.bibfile = ""
         self.bibdata = None
+        self.format = get_format("wiki")
 
         # Fill variables
         self.get_notebook_properties()
@@ -95,37 +96,18 @@ class BibTeXPageViewExtension(PageViewExtension):
 
     def update_root(self):
         """Update root page with library information."""
+        # Get content list with the rootpage's title
         page = self.pageview.notebook.get_page(self.rootpage)
-        page_format = get_format("wiki")
-        if page.hascontent:
-            # Get page contents as a list
-            page_tree = page.get_parsetree()
-            page_content = page_format.Dumper().dump(page_tree)
-            # Only keep title and creation date
-            page_content = page_content[:2]
-        else:
-            page_content = [
-                "====== References ======\n",
-                f"Created {datetime.now().strftime('%A %d %B %Y')}\n",
-            ]
+        content = self.get_page_title(page, "References")
 
-        # Add library statistics to page contents
-        page_content.extend(self.get_stats_list())
+        # Add library statistics
+        content.extend(self.get_stats_list())
 
-        # Add newline spacer
-        page_content.append("\n")
+        # Add list of folders
+        content.extend(self.get_folder_list())
 
-        # Add folder list to page content
-        page_content.extend(self.get_folder_list())
-
-        # Convert page content list to plain text
-        page_text = "".join(page_content)
-
-        # Parse text to regenerate content tree
-        new_tree = page_format.Parser().parse(page_text)
-
-        # Save updated library page
-        page.set_parsetree(new_tree)
+        # Update content tree and save page
+        page.set_parsetree(self.get_content_tree(content))
         self.pageview.notebook.store_page(page)
 
         logger.debug(
@@ -137,7 +119,7 @@ class BibTeXPageViewExtension(PageViewExtension):
             "\n===== Library ======\n",
             f"* [[{self.bibdata.bibfile}|{self.bibdata.bibname}]] | "
             f"{self.bibdata.num_entries} entries | "
-            f"{self.bibdata.updated}",
+            f"{self.bibdata.updated}\n",
         ]
         return stats_list
 
@@ -150,27 +132,35 @@ class BibTeXPageViewExtension(PageViewExtension):
         return folder_list
 
     def get_page_title(self, page, title):
-        page_format = get_format("wiki")
         if page.hascontent:
             # Get content tree and dump as a list
             page_tree = page.get_parsetree()
-            page_content = page_format.Dumper().dump(page_tree)
+            page_content = self.format.Dumper().dump(page_tree)
             # Only keep title and creation date
             page_content = page_content[:2]
         else:
             # Generate content list with new title
             page_content = [
-                    f"====== {title} ======\n",
-                    f"Created {datetime.now().strftime('%A %d %B %Y')}\n",
-                    ]
+                f"====== {title} ======\n",
+                f"Created {datetime.now().strftime('%A %d %B %Y')}\n",
+            ]
         return page_content
+
+    def get_content_tree(self, content):
+        """Convert page content list back to tree."""
+        # Convert list to text and parse to regenerate content tree
+        text = "".join(content)
+        tree = self.format.Parser().parse(text)
+        return tree
 
     def import_entries(self):
         for entry in self.bibdata.library.entries:
-            bibkey = entry['ID']
+            bibkey = entry["ID"]
             name = f"{self.rootpage}:{bibkey[0]}:{bibkey}"
             path = Path(Path.makeValidPageName(name))
-            logger.debug(f"BibTeX: Importing @{entry['ENTRYTYPE']} @{entry['ID']} to {path.name}")
+            logger.debug(
+                f"BibTeX: Importing @{entry['ENTRYTYPE']} @{entry['ID']} to {path.name}"
+            )
             page = self.pageview.notebook.get_page(path)
             content = self.get_page_title(page, bibkey)
             print(content)
