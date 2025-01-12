@@ -79,11 +79,12 @@ class BibTeXPageViewExtension(PageViewExtension):
         self.get_notebook_properties()
 
     @action(_("Import _BibTeX"), menuhints="tools")  # T: Menu item
-    def load_bibfile(self):
+    def import_bibtex(self):
         self.get_notebook_properties()
         self.navigation.open_page(self.rootpage)
         self.bibdata = BibTeXLibrary(self.bibfile)
         self.update_root()
+        self.import_entries()
 
     def get_notebook_properties(self):
         self.properties = self.plugin.notebook_properties(self.pageview.notebook)
@@ -147,6 +148,14 @@ class BibTeXPageViewExtension(PageViewExtension):
         for folder in self.bibdata.folders:
             folder_list.append(f"* [[+{folder}|{folder}]]\n")
         return folder_list
+
+    def import_entries(self):
+        for entry in self.bibdata.library.entries:
+            bibkey = entry['ID']
+            name = f"{self.rootpage}:{bibkey[0]}:{bibkey}"
+            path = Path(Path.makeValidPageName(name))
+            logger.debug(f"BibTeX: Importing @{entry['ENTRYTYPE']} @{entry['ID']} to {path.name}")
+            page = self.pageview.notebook.get_page(path)
 
 
 class BibTeXLibrary:
