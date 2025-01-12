@@ -108,16 +108,16 @@ class BibTeXPageViewExtension(PageViewExtension):
                 f"Created {datetime.now().strftime('%A %d %B %Y')}\n",
             ]
 
-        # Add library statistics as content list
+        # Add library statistics to page contents
         page_content.extend(self.get_stats_list())
 
         # Add newline spacer
         page_content.append("\n")
 
-        # Add folders as content list
+        # Add folder list to page content
         page_content.extend(self.get_folder_list())
 
-        # Convert content list to plain text
+        # Convert page content list to plain text
         page_text = "".join(page_content)
 
         # Parse text to regenerate content tree
