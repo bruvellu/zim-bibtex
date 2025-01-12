@@ -101,7 +101,7 @@ class BibTeXPageViewExtension(PageViewExtension):
             # Get page contents as a list
             page_tree = page.get_parsetree()
             page_content = page_format.Dumper().dump(page_tree)
-            # Only keep the title and creation date
+            # Only keep title and creation date
             page_content = page_content[:2]
         else:
             page_content = [
@@ -149,6 +149,22 @@ class BibTeXPageViewExtension(PageViewExtension):
             folder_list.append(f"* [[+{folder}|{folder}]]\n")
         return folder_list
 
+    def get_page_title(self, page, title):
+        page_format = get_format("wiki")
+        if page.hascontent:
+            # Get content tree and dump as a list
+            page_tree = page.get_parsetree()
+            page_content = page_format.Dumper().dump(page_tree)
+            # Only keep title and creation date
+            page_content = page_content[:2]
+        else:
+            # Generate content list with new title
+            page_content = [
+                    f"====== {title} ======\n",
+                    f"Created {datetime.now().strftime('%A %d %B %Y')}\n",
+                    ]
+        return page_content
+
     def import_entries(self):
         for entry in self.bibdata.library.entries:
             bibkey = entry['ID']
@@ -156,6 +172,8 @@ class BibTeXPageViewExtension(PageViewExtension):
             path = Path(Path.makeValidPageName(name))
             logger.debug(f"BibTeX: Importing @{entry['ENTRYTYPE']} @{entry['ID']} to {path.name}")
             page = self.pageview.notebook.get_page(path)
+            content = self.get_page_title(page, bibkey)
+            print(content)
 
 
 class BibTeXLibrary:
