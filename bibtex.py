@@ -160,7 +160,7 @@ class BibTeXPageViewExtension(PageViewExtension):
             ordbib = OrderedDict(entry)
             bibkey = ordbib.pop("ID")
             bibtype = ordbib.pop("ENTRYTYPE")
-            folder = bibkey[0]
+            folder = bibkey[0].upper()
 
             # bibkey = entry["ID"]
             name = f"{self.rootpage}:{folder}:{bibkey}"
