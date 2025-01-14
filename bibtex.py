@@ -80,15 +80,12 @@ class BibTeXPageViewExtension(PageViewExtension):
         # Fill variables
         self.get_notebook_properties()
 
-    @action(_("_Load BibTeX Library"), menuhints="tools")  # T: Menu item
-    def load_bibtex(self):
+    @action(_("Import _BibTeX Entries"), menuhints="tools")  # T: Menu item
+    def import_bibtex(self):
         self.get_notebook_properties()
         self.navigation.open_page(self.rootpage)
         self.bibdata = BibTeXLibrary(self.bibfile)
         self.update_root()
-
-    @action(_("Import _BibTeX Entries"), menuhints="tools")  # T: Menu item
-    def import_bibtex(self):
         self.import_entries()
 
     def get_notebook_properties(self):
