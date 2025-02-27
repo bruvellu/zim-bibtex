@@ -134,8 +134,11 @@ class BibTeXPageViewExtension(PageViewExtension):
         folder_list = [
             "\n===== Folders =====\n",
         ]
-        for folder in self.bibdata.folders:
-            folder_list.append(f"* [[+{folder}|{folder}]]\n")
+        if self.bibdata.folders:
+            piped_folders = " | ".join(
+                [f"[[+{folder}|{folder}]]" for folder in self.bibdata.folders]
+            )
+            folder_list.append(f"* {piped_folders}\n")
         return folder_list
 
     def get_page_title(self, page, title):
