@@ -27,7 +27,6 @@ from zim.plugins import PluginClass
 logger = logging.getLogger("zim.plugins.bibtex")
 
 
-# Try importing bibtexparser dependency
 try:
     import bibtexparser
 
