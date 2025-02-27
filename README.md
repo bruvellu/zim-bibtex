@@ -1,4 +1,4 @@
-# BibTeX plugin for Zim
+# :books: BibTeX plugin for Zim
 
 Import bibliographic references to Zim Desktop Wiki.
 
