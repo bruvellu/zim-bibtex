@@ -7,10 +7,10 @@
 # you can choose (default: ":References"). References are organized into
 # subfolders based on the first letter of their citation key. The plugin
 # creates an index page with library statistics and folder navigation. Each
-# reference page includes the entry type as a tag (@article, @book, etc.) and
-# all bibliographic fields as content (title, authors, journal, etc.). This
-# organization lets you search references by keywords and cite them in your
-# notes by creating links to their pages, seamlessly integrating your
+# reference page includes the entry type as a tag (@article, @book, @chapter,
+# etc.) and all bibliographic fields as content (title, authors, journal,
+# etc.). This organization lets you search references by keywords and cite them
+# in your notes by creating links to their pages, seamlessly integrating your
 # bibliography into your Zim workflow.
 
 import logging
