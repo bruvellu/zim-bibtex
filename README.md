@@ -7,8 +7,12 @@ Import bibliographic references to Zim Desktop Wiki.
 This plugin imports references from a BibTeX file (.bib) into your Zim notebook. 
 Each entry becomes a page containing the entry type as a tag (@article, @book, @chapter, etc.) and the bibliographic fields as regular text (title, authors, journal, etc.).
 The bibkey becomes the page name/title.
+
+![image](https://github.com/user-attachments/assets/87c2ef4e-b880-4aca-b2dc-1828664ffad7)
+
 References are organized into subfolders based on the first letter of their bibkey (usually alphabetical order).
 Subfolders are accessible through links in the index page, which is configurable (default: ":References") and also displays some library statistics.
+
 After importing, you can search references by their metadata and cite them by simply linking to their pages.
 It works great for reviews, note making, or academic digital gardens.
 
