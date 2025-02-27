@@ -1,10 +1,17 @@
-# Copyleft 2023 Bruno C. Vellutini <https://brunovellutini.com>
+# Copyleft 2025 - Bruno C. Vellutini - brunovellutini.com
 #
 # Import BibTeX references to Zim Desktop Wiki
-#
-# This plugin converts the entries in a BibTeX file to pages in Zim. This
-# allows one to link to these references directly from other pages.
 
+# This plugin imports bibliographic references from a BibTeX file (.bib) into
+# your Zim notebook. Each BibTeX entry becomes a page under a main folder that
+# you can choose (default: ":References"). References are organized into
+# subfolders based on the first letter of their citation key. The plugin
+# creates an index page with library statistics and folder navigation. Each
+# reference page includes the entry type as a tag (@article, @book, etc.) and
+# all bibliographic fields as content (title, authors, journal, etc.). This
+# organization lets you search references by keywords and cite them in your
+# notes by creating links to their pages, seamlessly integrating your
+# bibliography into your Zim workflow.
 
 import logging
 import os
